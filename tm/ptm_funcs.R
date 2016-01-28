@@ -152,7 +152,7 @@ ptm.get.data <- function(version) {
 }
 
 ## 1. set concepts equal to MLE of pure documents
-## 2. fix topics and cook on impure documents
+## 2. fix concepts to above and cook on impure documents
 ptm.run.mle <-  function(version, force=FALSE, num.iter=200) {
 
     out.dir       <- file.path(PTM.PROJ.DIR, version, 'topic_model')
@@ -201,8 +201,9 @@ ptm.run.mle <-  function(version, force=FALSE, num.iter=200) {
     return(ptm.mle)
 }
 
-## 1. set concepts equal to MLE of pure documents
-## 2. fix topics and cook on impure documents
+## 1. pure documents come from either pure topic or shared background topic
+## 2. cook with above model on pure documents
+## 2. fix concepts to above and cook on impure documents
 ptm.run.ptm1 <-  function(version, eta, force=FALSE, num.iter=2000) {
 
     out.dir       <- file.path(PTM.PROJ.DIR, version, 'topic_model')
