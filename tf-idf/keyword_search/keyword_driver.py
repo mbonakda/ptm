@@ -8,7 +8,7 @@ from keyword_functions import *
 # the script will check in path_save to see if the data objects exist.
 # if not, the script will generate them and save to path_save
 path_arxiv = '/home/jerry/Data/Hopper_Project/ptm_data/arxiv_processed_trunc/'
-path_save = './test_data_objects/'
+path_save = './data_objects/'
 
 concepts_pickle = "master-concepts.p"
 concepts_txt = "master-concepts"
