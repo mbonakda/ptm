@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+from __future__ import division
 
 # Jerry Chee
 # functions for keyword search by tf-idf score
@@ -127,12 +128,15 @@ def tf(keyword, doc, corpus_byfile, corpus_wordsindoc):
     """ computes term frequency"""
     # must first check if word in document
     if (keyword in corpus_byfile[doc]):
+        #print("byfile: {}".format(corpus_byfile[doc][keyword]))
+        #print("wordsindoc: {}".format(corpus_wordsindoc[doc]))
         return (corpus_byfile[doc][keyword] / corpus_wordsindoc[doc])
     else:
         return 0
 
 def idf(keyword, corpus_byword, len_corpus):
     """ computes inverse doc frequency """
+    #print("idf: {}".format(math.log(len_corpus / (1 + corpus_byword[keyword]))))
     return math.log(len_corpus / (1 + corpus_byword[keyword]))
 
 def tfidf(path, keyword, doc, corpus_byfile, corpus_byword, 
@@ -157,10 +161,57 @@ def compute_tfidf(corpus_path, path_save, corpus_byfile,
             score = tfidf(corpus_path, keyword, f, corpus_byfile, 
                     corpus_byword, corpus_wordsindoc)
 
+            #print("score: {}".format(score))
             # only save if score is meaningful
             if (score > 0):
                 tfidf_arxiv[f][keyword] = score
 
     # pickle
     pickle.dump(tfidf_arxiv, open(path_save+"tfidf_arxiv.p", 'w'))
+
+def okapi_bm25(word, doc,
+        k1, b, avg_dl, 
+        corpus_byfile, corpus_byword, corpus_wordsindoc):
+    """ computes okapi_bm25 score. k1 and b are knobs to tune"""
+    doc_term_count = corpus_byfile[doc][word]
+    doc_len = corpus_wordsindoc[doc]
+    doc_count = corpus_byword[word]
+    num_docs = len(corpus_byfile.keys())
+
+    TF = ((k1 + 1.0) * doc_term_count) / ((k1 * ((1.0 - b) + b * doc_len / avg_dl)) + doc_term_count)
+
+    IDF = math.log(
+            1.0 + (num_docs - doc_count + 0.5) / (doc_count + 0.5))
+
+    return TF * IDF
+
+def compute_okapi(path_save, corpus_byfile, corpus_byword, corpus_wordsindoc):
+    """ computes okapi_bm25 scores for all keywords, all articles"""
+    # output dict and knobs
+    okapi_arxiv = {}
+    k1 = 1.2
+    b = 0.75
+    # compute average doc length
+    avg_dl = 0
+    for f, val in corpus_wordsindoc.iteritems():
+        avg_dl += val
+    avg_dl /= len(corpus_wordsindoc.keys())
+
+    score = 0
+    for f in corpus_byfile:
+        # initialize dictoinary
+        okapi_arxiv[f] = {}
+
+        for keyword in corpus_byfile[f]:
+            score = okapi_bm25(keyword, f,
+                    k1, b, avg_dl,
+                    corpus_byfile, corpus_byword, corpus_wordsindoc)
+
+            # only keep score if meaningful
+            if (score > 0):
+                okapi_arxiv[f][keyword] = score
+
+
+    #pickle
+    pickle.dump(okapi_arxiv, open(path_save+"okapi_arxiv.p", 'w'))
 
