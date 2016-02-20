@@ -10,7 +10,7 @@ import pickle
 
 # change these paths
 path_arxiv = '/home/jerry/Data/Hopper_Project/ptm_data/arxiv_processed_trunc/'
-path_cosdist = 'fill in here'
+path_cosdist = './doc_comparisons.p'
 path_tfidf = 'fill in here'
 path_tfidf_re = 'fill in here'
 
