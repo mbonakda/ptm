@@ -12,14 +12,11 @@ import pickle
 path_arxiv = '/home/jerry/Data/Hopper_Project/ptm_data/arxiv_processed_trunc/'
 path_cosdist = './doc_comparisons.p'
 path_tfidf = 'fill in here'
-path_tfidf_re = 'fill in here'
 
 # =============================================================================
 doc_comparisons = pickle.load(open(path_cosdist, 'r'))
-# load tf-idf keyword scores (strict str matching)
-tfidf_arxiv = pickle.load(open(path_tfidf, 'r'))
 # load tfidf keyword scores (regex improvements)
-tfidf_arxiv_re = pickle.load(open(path_tfidf_re, 'r'))
+tfidf_arxiv = pickle.load(open(path_tfidf_re, 'r'))
 
 # function to take in a arxiv paper name and output the top k wiki concepts
 def relevant_concepts(arxiv_doc, dictionary, k):
@@ -68,8 +65,6 @@ while(1):
         print("Input not in range. Please try again.\n")
     else:
         print("regex improved keyword tf-idf score")
-        relevant_concepts(articles_old[i], tfidf_arxiv_re, 5)
-        print("keyword tf-idf score")
         relevant_concepts(articles_old[i], tfidf_arxiv, 5)
         print("")
         print("cosine distance tf-idf score")
