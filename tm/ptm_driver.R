@@ -7,8 +7,9 @@ source('ptm_funcs.R')
 PTM.PROJ.DIR <- '/Users/mbonakda/github/hopper-project/ptm/tm/analysis'
 
 ## the code assumes the following directories contain one text file per document
-dir.impure   <- '/Users/mbonakda/projects/hopper/ptm/data/arxiv_processed_trunc/'
-dir.pure     <- '/Users/mbonakda/projects/hopper/ptm/data/stat-th_pruned/'
+#dir.impure   <- '/Users/mbonakda/projects/hopper/ptm/data/arxiv_processed_trunc/'
+dir.impure   <-    '/Users/mbonakda/Desktop/abstract/'
+dir.pure     <- '/Users/mbonakda/projects/hopper/ptm/data/wiki_concepts'
 
 ############################################################
 # Data Generation
@@ -16,7 +17,7 @@ dir.pure     <- '/Users/mbonakda/projects/hopper/ptm/data/stat-th_pruned/'
 ## process raw data
 proc.lst <- ptm.transform.raw( dir.impure = dir.impure,
                                dir.pure   = dir.pure,
-                               version    = '01')
+                               version    = '03', min.words.impure=0)
 
 dtm.impure  <- proc.lst[['dtm.impure']]
 dtm.pure    <- proc.lst[['dtm.pure']]
@@ -24,12 +25,13 @@ n.pure      <- proc.lst[['n.pure']]
 n.impure    <- proc.lst[['n.impure']]
 vocab       <- proc.lst[['vocab']]
 doc.names   <- proc.lst[['doc.names']]
-
+impure.names <- doc.names[1:n.impure]
+pure.names <- doc.names[(n.impure+1):length(doc.names)]
 
 ## transform document-term matrix to list for lda Rpkg functions
 ## 01: ~6 minutes
 lda.docs <- ptm.conform.to.lda( dtm     = rbind(dtm.impure, dtm.pure),
-                                version = '01')
+                                version = '03')
 
 impure.docs   <- lda.docs[seq_len(n.impure)]
 pure.docs     <- lda.docs[seq_len(n.pure)+n.impure]
@@ -41,8 +43,8 @@ pure.docs     <- lda.docs[seq_len(n.pure)+n.impure]
 ##############
 ## 0. MLE
 ##############
-ptm.mle   <- ptm.run.mle(version = '01', num.iter = 200)
-doc.data  <- ptm.get.data(version = '01')
+ptm.mle   <- ptm.run.mle(version = '03', num.iter = 500)
+doc.data  <- ptm.get.data(version = '03')
 
 ## top 10 words in each concept
 concepts.mle           <- t(top.topic.words(ptm.mle$topics, 10))
@@ -53,9 +55,9 @@ rownames(concepts.mle) <- paste(rownames(concepts.mle), ".mle", sep='')
 ##############
 ## 1. PTM1
 ##############
-result.dir <- '/Users/mbonakda/github/hopper-project/ptm/tm/analysis/01/results'
-ptm1       <- ptm.run.ptm1(version = '01', eta = 0.1)
-doc.data   <- ptm.get.data(version = '01')
+result.dir <- '/Users/mbonakda/github/hopper-project/ptm/tm/analysis/02/results'
+ptm1       <- ptm.run.ptm1(version = '02', eta = 100)
+doc.data   <- ptm.get.data(version = '02')
 
 
 ## save concept comparisons for varying levels of eta
@@ -80,9 +82,9 @@ for( eta in eta.vec ) {
 
 
 ## background topics
-ptm1              <- ptm.run.ptm1(version = '01', eta = 100)
+ptm1              <- ptm.run.ptm1(version = '02', eta = 100, num.iter=5000)
 normalized.topics <- ptm1$topics/rowSums(ptm1$topics)
-bground           <- normalized.topics[39,]
+bground           <- normalized.topics[dim(ptm1$topics)[1],]
 names(bground)    <- colnames(normalized.topics)
 bground           <- data.frame(sort(bground, decreasing=TRUE))
 colnames(bground) <- 'topic.proportion'

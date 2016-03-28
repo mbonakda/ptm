@@ -1,8 +1,8 @@
 ## input: directory containing pure and impure documents
 ## create and serialize a document-term matrix, vocabulary, and document names
-ptm.transform.raw <- function(dir.impure, dir.pure, version, verbose=TRUE) {
+ptm.transform.raw <- function(dir.impure, dir.pure, version, verbose=TRUE, min.words.pure=150, min.words.impure=150) {
     library(tm)
-
+    #browser()
     out.dir        <- file.path(PTM.PROJ.DIR, version, 'data')
     dtm.file       <- file.path(out.dir, 'dtm.txt')
     vocab.file     <- file.path(out.dir, 'vocab.txt')
@@ -26,6 +26,9 @@ ptm.transform.raw <- function(dir.impure, dir.pure, version, verbose=TRUE) {
         ## document count
         n.pure      <- length(list.files(dir.pure))
         n.impure    <- length(list.files(dir.impure))
+        if (verbose) {
+            paste("VERBOSE: Number of impure docs: ", n.impure)
+        }
 
         ## construct document-term matrix
         corpus      <- Corpus(DirSource(c(dir.impure,dir.pure)), readerControl=list(language="English"))
@@ -41,9 +44,26 @@ ptm.transform.raw <- function(dir.impure, dir.pure, version, verbose=TRUE) {
         ## prune vocabulary by word count
         wc.impure   <- colSums(dtm[seq_len(n.impure),])
         wc.pure     <- colSums(dtm[seq_len(n.pure)+n.impure,])
-        valid.idx   <- wc.pure > 3 & wc.impure > 10 & sapply(names(wc.pure), nchar) > 2
+        valid.idx   <- wc.pure > 3 & wc.impure > 10 & sapply(names(wc.pure), nchar) > 2 & wc.pure < quantile(wc.pure, 0.98) & wc.impure < quantile(wc.impure,0.98)
         dtm         <- dtm[, valid.idx]
+        rownames(dtm) <- gsub(",", "", rownames(dtm))
 
+        ## prune document by length
+        dtm.impure <- dtm[seq_len(n.impure),]
+        dtm.pure   <- dtm[seq_len(n.pure)+n.impure,]
+
+        valid.idx  <- rowSums(dtm.impure) > min.words.impure
+        dtm.impure <- dtm.impure[valid.idx,]
+        n.impure   <- dim(dtm.impure)[1]
+        print(paste("Pruning", sum(!valid.idx), "impure document"))
+
+        valid.idx  <- rowSums(dtm.pure) > min.words.pure
+        dtm.pure   <- dtm.pure[valid.idx,]
+        n.pure     <- dim(dtm.pure)[1]
+        print(paste("Pruning", sum(!valid.idx), "pure document"))
+
+
+        dtm         <- rbind(dtm.impure, dtm.pure)
         vocab       <- colnames(dtm)
         doc.names   <- rownames(dtm)
         doc.cnts    <- t(data.frame(n.pure = n.pure, n.impure=n.impure))
