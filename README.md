@@ -11,13 +11,3 @@
   * The arxiv_processed_trunc directory contains 3631 documents listed under the 'stat-th' category.  
     * The document have been truncated at 1000 words and the LaTeX has been stripped. 
     * Date range: 03/2011 - 11/2015  
-
-## tf-idf 
-* The ptm/tf-idf directory contains code for generating tf-idf scores for purposes of finding relevant mathematical/statistical topics for arxiv papers.
-	* The ptm/tf-idf/keyword_search directory contains code which, given a list of concepts (provided in the directory) computes tf-idf scores for this list of concepts for each document in a specified corpus.
-		* The keyword_functions.py file contains functions used to generate regular expressions and to compute tf-idf scores. The tf-idf scores are stored in python dictionaries.
-		* The keyword_driver.py file shows how to use the functions in keyword_functions.py.
-	* okapi_bm25 scores have been added as well.
-
-* The raw text data for wiki pages and arxiv papers used can be found [here](https://drive.google.com/file/d/0B3wYZ-b_JMsWSHB0NE1jQ2hmWG8/view?usp=sharing)
-* This may be the same data that Matt specified above, but this is what I specifically used.
